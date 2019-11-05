@@ -105,8 +105,8 @@ def get_cpio_name(file_name: str) -> Optional[str]:
         return "images.{}.{}.cpio".format(*match.groups())
     else:
         return None
-    
-    
+
+
 def extract_file(file_name: str, dataset_dir: Union[Path, str]) -> Optional[IO]:
     if isinstance(dataset_dir, str):
         dataset_dir = Path(dataset_dir)
@@ -154,9 +154,7 @@ def write_file(file: IO, name: str, dataset_dir: Union[Path, str]):
 
 
 def extract_and_write(
-    file: str,
-    dataset_dir_src: Union[Path, str],
-    dataset_dir_dst: Union[Path, str]
+    file: str, dataset_dir_src: Union[Path, str], dataset_dir_dst: Union[Path, str]
 ):
     file_stream = extract_file(file, dataset_dir_src)
     write_file(file_stream, file, dataset_dir_dst)
@@ -172,13 +170,12 @@ def process_all_files(
     mp_extract_and_write = partial(
         extract_and_write,
         dataset_dir_src=dataset_dir_src,
-        dataset_dir_dst=dataset_dir_dst
+        dataset_dir_dst=dataset_dir_dst,
     )
 
     with Pool(max_executors) as executor:
         executor.map(mp_extract_and_write, file_l)
         # list(tqdm.tqdm(executor.imap(mp_extract_and_write, file_l), total=len(file_l)))
-
 
 
 if __name__ == "__main__":
@@ -191,4 +188,5 @@ if __name__ == "__main__":
         k: list(map(get_xml_name, v)) for k, v in all_tif_per_label.items()
     }
 
-    process_all_files(all_xml_per_label[11], tobacco_path, seminaire_path)
+    process_all_files(sum(all_xml_per_label.values(), []), tobacco_path, seminaire_path)
+    process_all_files(sum(all_tif_per_label.values(), []), tobacco_path, seminaire_path)

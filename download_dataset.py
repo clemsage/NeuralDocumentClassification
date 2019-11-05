@@ -32,7 +32,7 @@ def download_all_files(max_executors=26, filter_f=None):
     download_file_and_write = partial(download_file, local_dir=R'D:\Tobacco\\')
 
     with ThreadPoolExecutor(max_workers=max_executors) as executor:
-        res = executor.map(download_file,
+        res = executor.map(download_file_and_write,
                            map(lambda s: f"https://ir.nist.gov/cdip/cdip-images/images.{'.'.join(s)}.cpio",
                                filter(filter_f,
                                       itertools.combinations_with_replacement(alpha, 2))))

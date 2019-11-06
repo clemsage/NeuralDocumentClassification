@@ -24,7 +24,7 @@ def download_file(url, local_dir=""):
     return local_filename
 
 
-def download_all_files(max_executors=26, filter_f=None):
+def download_all_files(max_executors=8, filter_f=None):
     if filter_f is None:
 
         def filter_f(*args, **kwargs):
@@ -43,6 +43,7 @@ def download_all_files(max_executors=26, filter_f=None):
 
 
 if __name__ == "__main__":
-    already_done = ("d", "i")
+    fst = ("d", "j")
+    lst = ("h", "a")
 
-    download_all_files(26, lambda x: x > already_done)
+    download_all_files(8, lambda x:  fst <= x < lst)

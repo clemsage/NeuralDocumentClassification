@@ -42,8 +42,11 @@ class_to_idx = {
 }
 
 
-already_done = ("d", "j")
-already_done = (already_done[0], *already_done)
+fst = ("a", "a")
+fst = (fst[0], *fst)
+
+lst = ("d", "j")
+lst = (lst[0], *lst)
 
 
 def timeit(f):
@@ -69,9 +72,9 @@ def parse_labels(label_path: Path, data_filter_f=None) -> Dict[int, List[str]]:
 
 
 def filter_data(filename: str, label: int):
-    if filename < "images{}/{}/{}".format(*already_done) and label in [
-        class_to_idx[c] for c in class_names
-    ]:
+    if "images{}/{}/{}".format(*fst) <= filename < "images{}/{}/{}".format(
+        *lst
+    ) and label in [class_to_idx[c] for c in class_names]:
         return True
     return False
 
@@ -171,10 +174,11 @@ def write_file(
 def extract_and_write(
     file: str, dataset_dir_src: Union[Path, str], dataset_dir_dst: Union[Path, str]
 ):
-    archive, file_stream = extract_file(file, dataset_dir_src)
+    streams = extract_file(file, dataset_dir_src)
 
-    if file_stream is None:
+    if streams is None:
         return
+    archive, file_stream = streams
 
     write_file(archive, file_stream, file, dataset_dir_dst)
 
@@ -195,7 +199,7 @@ def process_all_files(
     # list(tqdm.tqdm(map(mp_extract_and_write, file_l), total=len(file_l)))
 
     with Pool(max_executors) as executor:
-    #     executor.map(mp_extract_and_write, file_l)
+    #     # executor.map(mp_extract_and_write, file_l)
         list(tqdm.tqdm(executor.imap(mp_extract_and_write, file_l), total=len(file_l)))
 
 
@@ -212,8 +216,8 @@ if __name__ == "__main__":
     all_xml_file = sorted(sum(all_xml_per_label.values(), []))
     all_tif_file = sorted(sum(all_tif_per_label.values(), []))
 
-    # print(all_xml_file)
-    # print(len(all_xml_file))
+    # print(all_xml_file[4565:4568])
+    # print({k: len(v) for k, v in all_xml_per_label.items()})
 
     # aa_files = [i for i in sum(all_xml_per_label.values(), []) if fil(get_stored_file_name(i)[1])]
 
@@ -225,5 +229,5 @@ if __name__ == "__main__":
 
     # assert all(t.isfile() for t in aa_archive_xml)
 
-    process_all_files(all_xml_file, tobacco_path, seminaire_path)
+    # process_all_files(all_xml_file, tobacco_path, seminaire_path)
     process_all_files(all_tif_file, tobacco_path, seminaire_path)

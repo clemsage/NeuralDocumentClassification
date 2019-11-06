@@ -229,5 +229,5 @@ if __name__ == "__main__":
 
     # assert all(t.isfile() for t in aa_archive_xml)
 
-    # process_all_files(all_xml_file, tobacco_path, seminaire_path)
+    process_all_files(all_xml_file, tobacco_path, seminaire_path)
     process_all_files(all_tif_file, tobacco_path, seminaire_path)

@@ -16,7 +16,7 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from pathlib import Path
 from multiprocessing import Pool
-from typing import Dict, List, IO, Union, Optional
+from typing import Dict, List, IO, Union, Optional, Tuple
 
 import tqdm
 
@@ -43,6 +43,7 @@ class_to_idx = {
 
 
 already_done = ("d", "j")
+already_done = (already_done[0], *already_done)
 
 
 def timeit(f):
@@ -68,7 +69,7 @@ def parse_labels(label_path: Path, data_filter_f=None) -> Dict[int, List[str]]:
 
 
 def filter_data(filename: str, label: int):
-    if filename < "images{}/{}/".format(*already_done) and label in [
+    if filename < "images{}/{}/{}".format(*already_done) and label in [
         class_to_idx[c] for c in class_names
     ]:
         return True
@@ -107,6 +108,28 @@ def get_cpio_name(file_name: str) -> Optional[str]:
         return None
 
 
+def get_stored_file_name(file_in_archive_name: str) -> Tuple[Path, Path]:
+    inter_dir = ""
+    suffix = ".unk"
+    if file_in_archive_name.endswith("xml"):
+        inter_dir = "ocr"
+        suffix = ".xml"
+
+    elif file_in_archive_name.endswith("tif"):
+        inter_dir = "image"
+        suffix = ".tif"
+
+    assert inter_dir
+    assert suffix in ".xml .tif".split()
+
+    inter_dir = Path(inter_dir)
+
+    return (
+        inter_dir,
+        Path(os.path.split(os.path.split(file_in_archive_name)[0])[-1] + suffix),
+    )
+
+
 def extract_file(file_name: str, dataset_dir: Union[Path, str]) -> Optional[IO]:
     if isinstance(dataset_dir, str):
         dataset_dir = Path(dataset_dir)
@@ -118,46 +141,42 @@ def extract_file(file_name: str, dataset_dir: Union[Path, str]) -> Optional[IO]:
     if cpio_name is None:
         return None
 
-    archive = tarfile.open(dataset_dir / Path(cpio_name), "r")
+    try:
+        archive = tarfile.open(dataset_dir / Path(cpio_name), "r")
+    except FileNotFoundError:
+        return None
 
-    return archive.extractfile(file_name)
+    return archive, archive.extractfile(file_name)
 
 
-def write_file(file: IO, name: str, dataset_dir: Union[Path, str]):
-    assert not file.closed
-
+def write_file(
+    archive: tarfile.TarFile, file: IO, name: str, dataset_dir: Union[Path, str]
+):
     if isinstance(dataset_dir, str):
         dataset_dir = Path(dataset_dir)
 
         assert dataset_dir.is_dir()
 
-    inter_dir = ""
-    suffix = ".unk"
-    if name.endswith("xml"):
-        inter_dir = "ocr"
-        suffix = ".xml"
+    inter_dir, short_file_name = get_stored_file_name(name)
 
-    elif name.endswith("tif"):
-        inter_dir = "image"
-        suffix = ".tif"
-
-    inter_dir = Path(inter_dir)
-
-    file_path = (
-        dataset_dir
-        / inter_dir
-        / Path(os.path.split(os.path.split(name)[0])[-1] + suffix)
-    )
+    file_path = dataset_dir / inter_dir / short_file_name
 
     with file_path.open("wb") as out_file:
         out_file.write(file.read())
+
+    file.close()
+    archive.close()
 
 
 def extract_and_write(
     file: str, dataset_dir_src: Union[Path, str], dataset_dir_dst: Union[Path, str]
 ):
-    file_stream = extract_file(file, dataset_dir_src)
-    write_file(file_stream, file, dataset_dir_dst)
+    archive, file_stream = extract_file(file, dataset_dir_src)
+
+    if file_stream is None:
+        return
+
+    write_file(archive, file_stream, file, dataset_dir_dst)
 
 
 @timeit
@@ -165,7 +184,7 @@ def process_all_files(
     file_l: List[str],
     dataset_dir_src: Union[Path, str],
     dataset_dir_dst: Union[Path, str],
-    max_executors=8,
+    max_executors=6,
 ):
     mp_extract_and_write = partial(
         extract_and_write,
@@ -173,14 +192,16 @@ def process_all_files(
         dataset_dir_dst=dataset_dir_dst,
     )
 
+    # list(tqdm.tqdm(map(mp_extract_and_write, file_l), total=len(file_l)))
+
     with Pool(max_executors) as executor:
-        executor.map(mp_extract_and_write, file_l)
-        # list(tqdm.tqdm(executor.imap(mp_extract_and_write, file_l), total=len(file_l)))
+    #     executor.map(mp_extract_and_write, file_l)
+        list(tqdm.tqdm(executor.imap(mp_extract_and_write, file_l), total=len(file_l)))
 
 
 if __name__ == "__main__":
     tobacco_path = Path(r"D:\Tobacco\\")
-    seminaire_path = Path(r"F:\tobacco_dataset\\")
+    seminaire_path = Path(r"F:\tobacco_dataset2\\")
     label_path = Path(r"F:\labels\\")
     all_tif_per_label = get_all_labels(label_path)
 
@@ -188,5 +209,21 @@ if __name__ == "__main__":
         k: list(map(get_xml_name, v)) for k, v in all_tif_per_label.items()
     }
 
-    process_all_files(sum(all_xml_per_label.values(), []), tobacco_path, seminaire_path)
-    process_all_files(sum(all_tif_per_label.values(), []), tobacco_path, seminaire_path)
+    all_xml_file = sorted(sum(all_xml_per_label.values(), []))
+    all_tif_file = sorted(sum(all_tif_per_label.values(), []))
+
+    # print(all_xml_file)
+    # print(len(all_xml_file))
+
+    # aa_files = [i for i in sum(all_xml_per_label.values(), []) if fil(get_stored_file_name(i)[1])]
+
+    # print(aa_files)
+
+    # z = tarfile.open(tobacco_path / Path(get_cpio_name(aa_files[0])), 'r')
+
+    # aa_archive_xml = [z.getmember(i) for i in aa_files]
+
+    # assert all(t.isfile() for t in aa_archive_xml)
+
+    process_all_files(all_xml_file, tobacco_path, seminaire_path)
+    process_all_files(all_tif_file, tobacco_path, seminaire_path)

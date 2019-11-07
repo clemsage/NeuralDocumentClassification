@@ -5,7 +5,10 @@ from typing import Union, Optional
 from xml.etree import ElementTree as et
 
 
-def parse_xml(xml_path: union[Path, str]):
+page_number_re = re.compile(r"\npgNbr=\d+\n")
+
+
+def parse_xml(xml_path: Union[Path, str]):
     if isinstance(xml_path, str):
         xml_path = Path(xml_path)
 
@@ -17,9 +20,17 @@ def parse_xml(xml_path: union[Path, str]):
 
     assert xml_root is not None, f"File {xml_path!s} is not an XML file"
 
-    text_content = xml_root["ot"].text
+    text_content = xml_root.find("ot").text
+
+    # Removing page markers
+    # Removing new lines
+    # Splitting on page markers
+    text_content = (
+        page_number_re.sub("pgNbr", text_content).replace("\n", " ").split("pgNbr")[:-1]
+    )
+
     return text_content
 
 
 if __name__ == "__main__":
-    main()
+    print(parse_xml(r"test\ocr\cjc51c00.xml"))

@@ -16,13 +16,19 @@ def parse_xml(xml_path: Union[Path, str], *, page_split=False):
     assert xml_path.exists(), f"File {xml_path!s} not found"
     assert xml_path.is_file(), f"File {xml_path!s} is not a file"
 
-    xml_tree = et.parse(str(xml_path))
+    try:
+        xml_tree = et.parse(str(xml_path))
+    except et.ParseError:
+        raise AssertionError(f"ParseError when processing file {xml_path!s}")
+    
     xml_root = xml_tree.getroot()
 
     assert xml_root is not None, f"File {xml_path!s} is not an XML file"
-
-    text_content = xml_root.find("ot").text
-
+    
+    try:
+        text_content = xml_root.find("ot").text
+    except AttributeError:
+        text_content = "pgNbr"
     # Removing page markers
     # Removing new lines
     # Splitting on page markers

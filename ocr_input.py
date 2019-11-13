@@ -1,3 +1,4 @@
+import itertools
 import re
 
 from pathlib import Path
@@ -8,7 +9,7 @@ from xml.etree import ElementTree as et
 page_number_re = re.compile(r"\npgNbr=\d+\n")
 
 
-def parse_xml(xml_path: Union[Path, str]):
+def parse_xml(xml_path: Union[Path, str], *, page_split=False):
     if isinstance(xml_path, str):
         xml_path = Path(xml_path)
 
@@ -28,6 +29,9 @@ def parse_xml(xml_path: Union[Path, str]):
     text_content = (
         page_number_re.sub("pgNbr", text_content).replace("\n", " ").split("pgNbr")[:-1]
     )
+
+    if not page_split:
+        text_content = ''.join(itertools.chain(*text_content))
 
     return text_content
 

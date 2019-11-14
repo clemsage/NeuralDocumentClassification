@@ -44,15 +44,22 @@ def download_file_from_google_drive(id, destination):
 
 def download_and_extract(key):
     file_id, destination = gdrive_files[key]
-    print(f"Downloading {os.path.split(destination)[-1]}")
-    download_file_from_google_drive(file_id, destination)
-
-    dest_dir = "dataset"
     
+    dest_dir = os.path.split(destination)[0]
     if not os.path.exists(dest_dir) or not os.path.isdir(dest_dir):
         os.mkdir(dest_dir)
     
+    print(f"Downloading {destination}")
+    download_file_from_google_drive(file_id, destination)
+
+    
+    
     if destination.endswith(".zip"):
+        dest_dir = "dataset"
+    
+        if not os.path.exists(dest_dir) or not os.path.isdir(dest_dir):
+            os.mkdir(dest_dir)
+            
         print(f"Unzipping {destination} to dataset/{os.path.splitext(os.path.split(destination)[-1])[0]}…")
         with zipfile.ZipFile(destination, "r") as zip_fp:
             zip_fp.extractall(dest_dir)
@@ -62,4 +69,4 @@ def download_and_extract(key):
 
 
 if __name__ == "__main__":
-    download_and_extract("ocr")
+    download_and_extract("label")

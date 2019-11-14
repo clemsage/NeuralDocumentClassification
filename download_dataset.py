@@ -8,6 +8,7 @@ gdrive_files = {
     "label": ("1kW1Mh6EXWL6_LQf_Jhu3udGjSldQIhax", "./dataset/label.txt",),
     "ocr": ("1DMZLcddKudTrHOtkdcJQiKIHPTRLSXxP", "./tmp/ocr.zip",),
     "image": ("156QjHOKbpLqVNmssYlfuuaKsu8yQzs7a", "./tmp/image.zip",),
+    "dataset_assignment": ("1jI-qGlwHhYT7ULAd8TSn-jesjMZ8pYIn", "./dataset/dataset_assignment.txt")
 }
 
 

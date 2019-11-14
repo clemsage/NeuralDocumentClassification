@@ -42,20 +42,21 @@ def download_file_from_google_drive(id, destination):
     save_response_content(response, destination)
 
 
-def download_and_extract(key):
+def download_and_extract(key, clean=False):
     file_id, destination = gdrive_files[key]
     
     dest_dir = os.path.split(destination)[0]
     if not os.path.exists(dest_dir) or not os.path.isdir(dest_dir):
         os.mkdir(dest_dir)
     
-    print(f"Downloading {destination}")
-    download_file_from_google_drive(file_id, destination)
+    if not os.path.exists(destination):
+        print(f"Downloading {destination}")
+        download_file_from_google_drive(file_id, destination)
 
     
     
     if destination.endswith(".zip"):
-        dest_dir = "dataset"
+        dest_dir = "./dataset"
     
         if not os.path.exists(dest_dir) or not os.path.isdir(dest_dir):
             os.mkdir(dest_dir)
@@ -64,9 +65,10 @@ def download_and_extract(key):
         with zipfile.ZipFile(destination, "r") as zip_fp:
             zip_fp.extractall(dest_dir)
         
-        print(f"Cleaning {destination}")
-        os.remove(destination)
+        if clean:
+            print(f"Cleaning {destination}")
+            os.remove(destination)
 
 
 if __name__ == "__main__":
-    download_and_extract("label")
+    download_and_extract("ocr")

@@ -6,6 +6,7 @@ import zipfile
 
 gdrive_files = {
     "label": ("1kW1Mh6EXWL6_LQf_Jhu3udGjSldQIhax", "./dataset/label.txt",),
+    "label_test": ("1lUhoZDQ6Dx1UTE3y62-EvRGlB6Q5ep4z", "./dataset/label_test.txt",),
     "ocr": ("1DMZLcddKudTrHOtkdcJQiKIHPTRLSXxP", "./tmp/ocr.zip",),
     "image": ("156QjHOKbpLqVNmssYlfuuaKsu8yQzs7a", "./tmp/image.zip",),
     "dataset_assignment": ("1jI-qGlwHhYT7ULAd8TSn-jesjMZ8pYIn", "./dataset/dataset_assignment.txt")

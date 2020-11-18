@@ -3,7 +3,9 @@
 Document image classification with neural networks on a subset of the RVL-CDIP dataset [[1]](#1).
 
 ## Getting Started
+
 The classification problem is tackled with two different approaches:
+
 * Visual approach over the image pixels with dense only and convolutional neural networks: ```skeleton.ipynb```
 * Textual approach over the recognized image words with bag-of-words and word embedding models: ```skeleton_ocr.ipynb```
 
@@ -16,6 +18,8 @@ For a better experience, execute the notebooks within a Google Colab environment
 * **Thibault Douzon** - [pLOPeGG](https://github.com/pLOPeGG)
 * **Jérémy Espinas**
 * **Clément Sage** - [clemsage](https://github.com/clemsage)
+* **Bertrand Buffat** - [berbuf](https://github.com/berbuf)
 
 ## References
+
 <a id="1">[1]</a> A. W. Harley, A. Ufkes, K. G. Derpanis, "Evaluation of Deep Convolutional Nets for Document Image Classification and Retrieval," in ICDAR, 2015
